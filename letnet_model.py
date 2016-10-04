@@ -152,7 +152,7 @@ def train():
             # data = pickle.load(handle)
             return data
 
-    path = os.getcwd() + "../processed_pickle"
+    path = os.getcwd() + "/../processed_pickle"
     print("path: %s" % path)
     processed_pickles = [item for item in os.listdir(path) if item.endswith(".pickle")]
     processed_pickles = processed_pickles[:FLAGS.n_bundle]
