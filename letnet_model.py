@@ -20,10 +20,10 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('max_steps', 1000, 'Number of steps to run trainer.')
 flags.DEFINE_integer('n_bundle', 1, 'Number of bundles to upload.')
-flags.DEFINE_integer('validation_size', 20000, 'Number of bundles to upload.')
-flags.DEFINE_string('data_dir', '~/tmp/data', 'Directory for storing data')
-flags.DEFINE_string('summaries_dir', '~/tmp/mnist_logs', 'Summaries directory')
-
+flags.DEFINE_integer('validation_size', 2000, 'Number of bundles to upload.')
+flags.DEFINE_string('data_dir', '/tmp/data2', 'Directory for storing data')
+flags.DEFINE_string('summaries_dir', '/tmp/mnist_logs2', 'Summaries directory')
+LOGDIR = './save'
 # flags.DEFINE_boolean('fake_data', False, 'If true, uses fake data '
 #                                          'for unit testing.')
 # flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
@@ -152,6 +152,8 @@ def train():
             # data = pickle.load(handle)
             return data
 
+    sess = tf.InteractiveSession()
+
     path = os.getcwd() + "/../processed_pickle"
     print("path: %s" % path)
     processed_pickles = [item for item in os.listdir(path) if item.endswith(".pickle")]
@@ -209,7 +211,7 @@ def train():
         return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                               strides=[1, 2, 2, 1], padding='SAME')
 
-    sess = tf.InteractiveSession()
+    # sess = tf.InteractiveSession()
 
     x = tf.placeholder(tf.float32, [None, WIDTH * HEIGHT * channel])
     W = tf.Variable(tf.zeros([WIDTH * HEIGHT * channel, n_class]))
@@ -289,10 +291,13 @@ def train():
                                           sess.graph)
     test_writer = tf.train.SummaryWriter(FLAGS.summaries_dir + '/test')
 
-    # tf.initialize_all_variables().run()
+    tf.initialize_all_variables().run()
+    saver = tf.train.Saver()
 
 ###    with tf.name_scope('input_reshape'):
         #tf.image_summary('input', images_data, 10)
+
+
 
 
     def feed_dict():
@@ -301,7 +306,7 @@ def train():
 
 
     # accuracy_lst = []
-    sess.run(tf.initialize_all_variables())
+    # sess.run(tf.initialize_all_variables())
     for i in range(FLAGS.max_steps):
 
         if i % 10 == 0:
@@ -314,6 +319,7 @@ def train():
             test_writer.add_summary(summary, i)
             print('MSE at step %s: %s' % (i, acc))
         else:  # Record train set summaries, and train
+
             if i % 100 == 99:  # Record execution stats
                 run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                 run_metadata = tf.RunMetadata()
@@ -327,10 +333,29 @@ def train():
             else:  # Record a summary
                 summary, _ = sess.run([merged, train_step], feed_dict=feed_dict())
                 train_writer.add_summary(summary, i)
+            # if i % 100 == 99:  # Record execution stats
+            #     print('Adding run metadata for', i)
+            #     # run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+            #     # run_metadata = tf.RunMetadata()
+            #     summary, _ = sess.run([merged, train_step],
+            #                           feed_dict=feed_dict())
+            #     # train_writer.add_run_metadata(run_metadata, 'step%03d' % i)
+            #     train_writer.add_summary(summary, i)
+            #
+            # else:  # Record a summary
+            # summary, _ = sess.run([merged, train_step], feed_dict=feed_dict())
+            # train_writer.add_summary(summary, i)
         # train_step.run(session=sess, feed_dict={x: batch[0], y_: batch[1]})
 
     train_writer.close()
     test_writer.close()
+
+    if not os.path.exists(LOGDIR):
+            os.makedirs(LOGDIR)
+    checkpoint_path = os.path.join(LOGDIR, "model.ckpt")
+    filename = saver.save(sess, checkpoint_path)
+    print("Model saved in file: %s" % filename)
+
 
     # with open('result.txt', 'w') as outfile:
     #     json.dump(str(accuracy_lst), outfile)
@@ -347,8 +372,10 @@ def train():
 
 def main(_):
     if tf.gfile.Exists(FLAGS.summaries_dir):
+        print("exists")
         tf.gfile.DeleteRecursively(FLAGS.summaries_dir)
     tf.gfile.MakeDirs(FLAGS.summaries_dir)
+    print("make one")
 
     print("data_dir: %s" % FLAGS.data_dir)
     print("n_bundle: %s" % FLAGS.n_bundle)
