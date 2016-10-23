@@ -795,7 +795,6 @@ ReUpdate(void)
 	int mode = RM_ASYNC;
 	int i;
 	const int MAXSTEPS = 2000;
-	std::cout << "update!!  " << counter << std::endl; 
 	START_PROFILE("ReUpdate");
 	ReInfo->_refreshDisplay = 0;
 	if (counter >= 0) {
