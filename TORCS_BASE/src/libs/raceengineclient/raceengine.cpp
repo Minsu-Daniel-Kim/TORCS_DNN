@@ -37,7 +37,6 @@
 #include <sys/stat.h>
 #include <zmq.hpp>
 #include <zhelpers.hpp>
-    #include "bzlib.h"
 #include "racecv.h"
 #include "racemain.h"
 #include "racegl.h"
